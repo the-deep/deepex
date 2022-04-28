@@ -1,4 +1,4 @@
-## DeepExt
+## Deepex
 
 ### installation
 

@@ -27,9 +27,8 @@ def get_standard_text(lines, images=None, output_format="plain", p_num=0):
     
     for c in groups:
         lines = " ".join([word.word for word in c]).split(". ")
-        lines = [c+"." for c in lines]
-        line = "\n".join(lines)
-        total_text.append(line)
+        lines = "\n".join([c+"." if i+1!=len(lines) else c for i, c in enumerate(lines)])
+        total_text.append(lines)
             
     if output_format == "plain":
         total_text = PLAIN_SEP.join(total_text)
@@ -38,8 +37,3 @@ def get_standard_text(lines, images=None, output_format="plain", p_num=0):
     elif output_format == "list":
         total_text = total_text + [END_PAGE_SEP.format(p_num)]
         return total_text
-    
-            
-        
-    
-    

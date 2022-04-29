@@ -1,4 +1,4 @@
-## DeepExt
+## Deepex
 
 ### installation
 
@@ -17,7 +17,7 @@ PDF_DOCUMENT = [YOUR_DOCUMENT_PATH]
 with open(PDF_DOCUMENT_PATH,'rb') as f:
     binary = base64.b64encode(f.read())
 
-document = TextFromFile(stream=binary, ext="pdf"
+document = TextFromFile(stream=binary, ext="pdf")
 text, other = document.extract_text() 
 ```
 

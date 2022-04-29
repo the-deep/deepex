@@ -26,7 +26,9 @@ def get_standard_text(lines, images=None, output_format="plain", p_num=0):
     groups = [[i for i  in g] for _, g in groupby(plain, lambda x: x.__dict__["blockn"]) ]
     
     for c in groups:
-        line = "\n".join(" ".join([word.word for word in c]).split(". "))
+        lines = " ".join([word.word for word in c]).split(". ")
+        lines = [c+"." for c in lines]
+        line = "\n".join(lines)
         total_text.append(line)
             
     if output_format == "plain":

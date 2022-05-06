@@ -1,4 +1,5 @@
 from itertools import groupby
+from operator import attrgetter
 from ..attr import START_PAGE_SEP, END_PAGE_SEP, PLAIN_SEP
 
 
@@ -22,8 +23,8 @@ def get_standard_text(lines, images=None, output_format="plain", p_num=0):
             t = line.get_line_list()
         leave.append(t)
         
-    plain = [w for v in leave for w in v]
-    groups = [[i for i  in g] for _, g in groupby(plain, lambda x: x.__dict__["blockn"]) ]
+    plain = sorted([w for v in leave for w in v], key=attrgetter("blockn"))
+    groups = [[i for i  in g] for _, g in groupby(plain, lambda x: x.__dict__["blockn"])]
     
     for c in groups:
         lines = " ".join([word.word for word in c]).split(". ")

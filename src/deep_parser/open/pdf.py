@@ -36,7 +36,7 @@ class Pdf(Document):
         self.fontsize = fontsize
         
         
-        self.pages = [self.load_page(i) for i in range(self.pageCount)]
+        self.pages = [self.load_page(i) for i in range(self.page_count)]
         self.check_lenght()
         self.text = None
         

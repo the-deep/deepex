@@ -69,7 +69,7 @@ class TextFromFile:
             return images, _page
         
         _results = []
-        for index in range(self.pdf.pageCount):
+        for index in range(self.pdf.page_count):
             images, _page = process(self.pdf.get_page(index))
             _results.append((images,_page))
 

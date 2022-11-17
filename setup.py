@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-PACKAGE_VERSION = "0.1"
+PACKAGE_VERSION = "0.2"
 MINOR_RELEASE = "0"
 
 setup(

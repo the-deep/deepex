@@ -44,14 +44,16 @@ return list-formatted text. `Results` instance can be used for document images p
 text, other = document.extract_text()
 other.save_images(directory_path = DIRECTORY_PATH)
 ```
+`extract_text()` method can be replaced with `extract_text_multi()` for a multi-processing management of extraction.
+
 
 You can also extract text from webpages/html:
 
 ```
 from deep_parser import TextFromWeb
 
-URL = [WEBSITE_URL]
+URL = WEBSITE_URL
 webpage = TextFromWeb(url=URL)
-text = webpage.extract_text(output_format="list")
+text = webpage.extract_text(output_format="list", url=URL)
 
 ```

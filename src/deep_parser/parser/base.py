@@ -64,7 +64,7 @@ class TextFromFile:
         except (RuntimeError, ValueError, Exception) as e:
             raise e
     
-    def serial_extract_text(self, output_format: str = "plain"):
+    def extract_text(self, output_format: str = "plain"):
 
         def _process_page(page, output_format: str = "plain"):
             
@@ -106,7 +106,7 @@ class TextFromFile:
             results = _results
         return results, Results(images=imgs, pages=pages)
         
-    def extract_text(self, output_format: str = "plain"):
+    def extract_text_multi(self, output_format: str = "plain"):
         
         pdf = self.pdf
         global _process_page
@@ -122,7 +122,7 @@ class TextFromFile:
                 root = DocumentTree(_page.page, _page._htext, _page._vtext)
                 recursive_process(root=root)
                 setattr(root, "number", _page.page.number)
-                text = root.get_text(images=images, p_num=page_idx+1, output_format=output_format)
+                text = root.get_text(images=images, p_num=page_idx+1, output_format="list")
                 #if not text:
                 #    text = root.get_text(p_num=page_idx+1, output_format=output_format)
                 return text, images.imgs
@@ -133,14 +133,24 @@ class TextFromFile:
                 
         indexes = [i for i in range(pdf.page_count)]
         pages = [pdf[i] for i in indexes]
-        _format = [output_format]*len(indexes)
+        _format = ["list"]*len(indexes)
         arg = [(p, f) for p, f in zip(indexes, _format)]
         
         with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
             results = p.map(_process_page, arg, chunksize=1)
         
         text, imgs = [c[0] for c in results], [c[1] for c in results]
-        text = "\n".join(text) if output_format == "plain" else text
+        
+        text = exclude_repetitions(text)
+
+        if output_format == "plain":
+            results = reformat_text(text)#"\n".join(save)
+        elif output_format == "list":
+            results = text
+        else:
+            results = text
+        #text = "\n".join(text) if output_format == "plain" else text
+        
         result_imgs = Results(images=imgs, pages=pages)
         
         return text, result_imgs

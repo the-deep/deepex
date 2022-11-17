@@ -12,6 +12,6 @@ X1: str = "x1"
 Y0: str = "y0"
 Y1: str = "y1"
 
-START_PAGE_SEP: str = "********* [PAGE {} START] *********"
+START_PAGE_SEP: str = "********* [PAGE {} START] *********\n"
 END_PAGE_SEP: str = "\n********* [PAGE {} END] *********\n"
-PLAIN_SEP: str = "\n************************\n"
+PLAIN_SEP: str = "\n\n\n"

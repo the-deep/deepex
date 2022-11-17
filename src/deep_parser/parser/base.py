@@ -1,14 +1,15 @@
 import io
 import os
 import base64
+import requests
 import multiprocessing
 
 from ..const import ERROR_MESSAGE_IN_TEXT
 from ..open.pdf import Pdf
 from ..process.images import Images
 from ..process.layout import Layout
-from ..utils.text import get_standard_text
-        
+from ..process.parse import DocumentTree, recursive_process
+from ..utils.text import reformat_text, exclude_repetitions
         
         
 class Results:
@@ -38,7 +39,7 @@ class Results:
         for imgs, lay in self.attr:
 
             pics = [lay.page.get_image_bbox(c[7]) for c in lay.page.get_images()]
-            images = [c.rect for c in imgs.imgs]
+            images = [c.rect for c in imgs]
             total = pics + images
             page_n += 1
 
@@ -48,42 +49,57 @@ class Results:
                     pix.pil_save(os.path.join(directory_path, f"{page_n}_{i}.jpeg"))
                 except (ValueError, Exception):
                     continue
-                
+    
 
 class TextFromFile:
 
-    def __init__(self, stream: bytes, ext: str):
+    def __init__(self, stream: bytes, ext: str, from_web=False, url: str = None):
 
         try:
-            self.pdf = Pdf(stream=io.BytesIO(base64.b64decode(stream)), filetype=ext)
+            if from_web:
+                if not url: raise ValueError("A valid PDF url must be passed")
+                doc = requests.get(url).content
+            stream = io.BytesIO(base64.b64decode(stream)) if not from_web else io.BytesIO(doc)
+            self.pdf = Pdf(stream=stream, filetype=ext)
         except (RuntimeError, ValueError, Exception) as e:
             raise e
     
     def serial_extract_text(self, output_format: str = "plain"):
 
-        def process(page):
+        def _process_page(page, output_format: str = "plain"):
             
-            _page = Layout(page)
-            images = Images(page, page_words=_page._htext)
-
-            return images, _page
+            try:
+                _page = Layout(page)
+                images = Images(page, page_words=_page._htext)
+                root = DocumentTree(_page.page, _page._htext, _page._vtext)
+                recursive_process(root=root)
+                setattr(root, "number", _page.page.number)
+                text = root.get_text(images=images, output_format="list", p_num=root.number)
+                #if not text:
+                #    text = root.get_text(output_format=output_format, p_num=root.number)
+                return text, images.imgs, _page
+            
+            except Exception as e:
+                text = ERROR_MESSAGE_IN_TEXT
+                return text, images.imgs, _page
         
         _results = []
         for index in range(self.pdf.page_count):
-            images, _page = process(self.pdf.get_page(index))
-            _results.append((images,_page))
+            text, images, _page = _process_page(self.pdf.get_page(index), output_format="list")
+            _results.append((text, images, _page))
 
         save, imgs, pages, i = [], [], [], 1
-        for im, pg in _results:
-
-            text = get_standard_text(lines= pg._vtext, images=im, output_format=output_format, p_num=i)
+        for text, im, pg in _results:
+            #text = p.get_text(images=im, output_format=output_format, p_num=i)
             save.append(text)
             imgs.append(im)
             pages.append(pg)
             i += 1
 
+        save = exclude_repetitions(save)
+
         if output_format == "plain":
-            results = "\n".join(save)
+            results = reformat_text(save)#"\n".join(save)
         elif output_format == "list":
             results = save
         else:
@@ -103,12 +119,17 @@ class TextFromFile:
             try:
                 
                 images = Images(page, page_words=_page._htext)
-                text = get_standard_text(lines=_page._vtext, images=images, p_num=page_idx+1, output_format=output_format)
+                root = DocumentTree(_page.page, _page._htext, _page._vtext)
+                recursive_process(root=root)
+                setattr(root, "number", _page.page.number)
+                text = root.get_text(images=images, p_num=page_idx+1, output_format=output_format)
+                #if not text:
+                #    text = root.get_text(p_num=page_idx+1, output_format=output_format)
                 return text, images.imgs
 
             except Exception as e:
                 text = ERROR_MESSAGE_IN_TEXT
-                return text , []
+                return text , images.imgs
                 
         indexes = [i for i in range(pdf.page_count)]
         pages = [pdf[i] for i in indexes]

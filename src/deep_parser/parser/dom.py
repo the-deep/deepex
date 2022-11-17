@@ -5,31 +5,31 @@ from lxml.etree import SerialisationError
 
 class TextFromWeb:
 
-    def __init__(self, url):
+    def __init__(self, url=None):
 
         self.url = url
         self.session = HTMLSession()
 
-    def _render_url(self):
+    def _render_url(self, url):
 
-        r = self.session.get(self.url, timeout=10)
+        r = self.session.get(url, timeout=10)
         r.html.render(timeout=10, sleep=1, keep_page=True)
         return r
 
-    def _get_html(self):
+    def _get_html(self, url):
 
         try:
-            results, = self._render_url()
+            results, = self._render_url(url=url)
         except (TimeoutError, Exception):
-            results, = [self.session.get(self.url)]
+            results, = [self.session.get(url)]
 
         return results
 
-    def extract_text(self, output_format: str = "plain"):
+    def extract_text(self, url, output_format: str = "plain"):
 
-        results = self._get_html()
+        results = self._get_html(url=url)
         try:
-            self.pars = ContentParserFromWeb(url=self.url, html=results.html.html)
+            self.pars = ContentParserFromWeb(url=url, html=results.html.html)
         except (RecursionError, SerialisationError, Exception):
             return [""] if output_format == "list" else ""
 

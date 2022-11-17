@@ -1,7 +1,15 @@
-import threading
-
 class DocumentProcessingError(Exception):
     def __init__(self, message: str = "Corrupted document"):
+        super().__init__(message)
+
+
+class DLAError(Exception):
+    def __init__(self, message: str = "DLA Failed"):
+        super().__init__(message)
+        
+        
+class IntersectionsError(Exception):
+    def __init__(self, message: str = "Hierarchical Interesection Error"):
         super().__init__(message)
         
 class ScannedDocumentError(Exception):

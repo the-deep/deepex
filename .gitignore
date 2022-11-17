@@ -1,3 +1,12 @@
+.idea
 build/
 dist/
-src/deep_parser.egg-info/
+tools/
+tools/**/data/*
+tools/**/**/.serverless
+*/deep_parser.egg-info
+tools/libreoffice/handler/cache
+tools/libreoffice/handler/node_modules
+tools/libreoffice/handler/.requirements.zip
+tools/libreoffice/handler/package.json
+tools/libreoffice/handler/package-lock.json

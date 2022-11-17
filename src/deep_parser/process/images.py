@@ -93,11 +93,8 @@ class Images:
         
         return Rect(x0,y0,x1,y1)
         
-    
-    
-       
-    @staticmethod
-    @func_set_timeout(10) 
+    @staticmethod 
+    @func_set_timeout(10)
     def remove_near_rect(rect_list):
         
         """recursive method removing nearest graphical components"""
@@ -154,7 +151,6 @@ class Images:
             if coo.get_area() > half_area:
                 coors.remove(coo)
         return coors
-    
     
     @staticmethod
     @func_set_timeout(10)
@@ -260,21 +256,26 @@ class Images:
                 return res
             except (FunctionTimedOut, Exception) as e:
                 return im
-            
+
         imgs_start = [self.cleanup_coordinates(c.get("rect"), self.page) for c in self.page.get_drawings()]
-        imgs_start = Images.remove_biggest(imgs_start, self.page)
+        #imgs_start = Images.remove_biggest(imgs_start, self.page)
         imgs = list(set(Images.inside(imgs_start)))
 
         rex = tables(imgs)
+        imgs_tab = []
         if rex:
             for el in rex:
                 if el:
                     for value in el.values():
                         x0, y0, x1, y1 = min(value, key=lambda x: x.x0), min(value, key=lambda x: x.y0), \
                                          max(value, key=lambda x: x.x1), max(value, key=lambda x: x.y1)
-                        imgs.append(Rect(x0.x0, y0.y0, x1.x1, y1.y1))
+                        
+                        imgs_tab.append(Rect(x0.x0, y0.y0, x1.x1, y1.y1))
 
         imgs = Images.inside(list(set(imgs)))
+        imgs_tab = Images.inside(list(set(imgs_tab)))
         imgs = near(imgs)
+        imgs_tab = near(imgs_tab)
+        imgs = Images.remove_biggest(imgs, self.page)
         
-        return [Image(self.page.number, c) for c in imgs]
+        return [Image(self.page.number, c) for c in list(set(imgs+imgs_tab))]

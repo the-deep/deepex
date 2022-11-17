@@ -1,8 +1,8 @@
-## Deepex
+## DeepExt
 
 ### installation
 
-`pip install git+https://github.com/the-deep/deepex`
+`pip install git+https://github.com/the-deep/deepext-test`
 
 ### Usage
 
@@ -19,6 +19,18 @@ with open(PDF_DOCUMENT_PATH,'rb') as f:
 
 document = TextFromFile(stream=binary, ext="pdf")
 text, other = document.extract_text() 
+```
+
+TextFromFile class also accepts a PDF document URL from a website:
+
+```
+from deep_parser import TextFromFile
+
+PDF_URL = [DOCUMENT_URL]
+
+document = TextFromFile(stream=None, ext="pdf", from_web=True, url=PDF_URL)
+text, other = document.extract_text() 
+
 ```
 
 `extract_text()` method returns a tupla with the extracted text and a `Results` class instance.

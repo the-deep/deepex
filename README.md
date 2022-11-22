@@ -2,7 +2,7 @@
 
 ### installation
 
-`pip install git+https://github.com/the-deep/deepext-test`
+`pip install git+https://github.com/the-deep/deepex`
 
 ### Usage
 

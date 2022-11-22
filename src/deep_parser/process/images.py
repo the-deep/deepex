@@ -262,7 +262,7 @@ class Images:
         imgs = list(set(Images.inside(imgs_start)))
 
         rex = tables(imgs)
-        imgs_tab = []
+        #imgs_tab = []
         if rex:
             for el in rex:
                 if el:
@@ -270,12 +270,12 @@ class Images:
                         x0, y0, x1, y1 = min(value, key=lambda x: x.x0), min(value, key=lambda x: x.y0), \
                                          max(value, key=lambda x: x.x1), max(value, key=lambda x: x.y1)
                         
-                        imgs_tab.append(Rect(x0.x0, y0.y0, x1.x1, y1.y1))
+                        imgs.append(Rect(x0.x0, y0.y0, x1.x1, y1.y1))
 
         imgs = Images.inside(list(set(imgs)))
-        imgs_tab = Images.inside(list(set(imgs_tab)))
+        #imgs_tab = Images.inside(list(set(imgs_tab)))
         imgs = near(imgs)
-        imgs_tab = near(imgs_tab)
+        #imgs_tab = near(imgs_tab)
         imgs = Images.remove_biggest(imgs, self.page)
         
-        return [Image(self.page.number, c) for c in list(set(imgs+imgs_tab))]
+        return [Image(self.page.number, c) for c in list(set(imgs))]

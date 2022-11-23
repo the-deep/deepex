@@ -125,11 +125,11 @@ class TextFromFile:
                 text = root.get_text(images=images, p_num=page_idx+1, output_format="list")
                 #if not text:
                 #    text = root.get_text(p_num=page_idx+1, output_format=output_format)
-                return text, images.imgs
+                return text, images.imgs, _page
 
             except Exception as e:
                 text = ERROR_MESSAGE_IN_TEXT
-                return text , images.imgs
+                return text , images.imgs, _page
                 
         indexes = [i for i in range(pdf.page_count)]
         pages = [pdf[i] for i in indexes]
@@ -139,7 +139,7 @@ class TextFromFile:
         with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
             results = p.map(_process_page, arg, chunksize=1)
         
-        text, imgs = [c[0] for c in results], [c[1] for c in results]
+        text, imgs, pages = [c[0] for c in results], [c[1] for c in results], [c[2] for c in results]
         
         text = exclude_repetitions(text)
 

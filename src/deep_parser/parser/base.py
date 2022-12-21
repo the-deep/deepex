@@ -53,7 +53,7 @@ class Results:
 
 class TextFromFile:
 
-    def __init__(self, stream: bytes, ext: str, from_web=False, url: str = None):
+    def __init__(self, stream: bytes = None, from_web=False, url: str = None, ext: str = "pdf"):
 
         try:
             if from_web:

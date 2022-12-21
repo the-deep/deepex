@@ -25,8 +25,13 @@ class TextFromWeb:
 
         return results
 
-    def extract_text(self, url, output_format: str = "plain"):
+    def extract_text(self, url=None, output_format: str = "plain"):
 
+        if hasattr(self, "url"):
+            url = self.url
+        elif url:
+            url = url
+            
         results = self._get_html(url=url)
         try:
             self.pars = ContentParserFromWeb(url=url, html=results.html.html)

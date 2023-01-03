@@ -55,11 +55,12 @@ def get_page_text(leaves, images = None, output_format = "plain", p_num = 0):
                 if not t.strip().lower().isnumeric():
                     leave.append(t)
             
-        if all(c == "" for c in leave):
-            if leave:
-                leave = [leave[0]]
+        #if all(c == "" for c in leave):
+        #    if leave:
+        #        leave = [leave[0]]
         if leave:
-            total_text.append(" ".join([c for c in leave if c]))
+            t = " ".join([c for c in leave if c]).strip()
+            if t: total_text.append(t)
 
     #print(total_text)
     #if output_format == "plain":

@@ -13,7 +13,7 @@ class TextFromWeb:
     def _render_url(self, url):
 
         r = self.session.get(url, timeout=10)
-        r.html.render(timeout=10, sleep=1, keep_page=True)
+        r.html.render(timeout=10, sleep=1, keep_page=True, retries=2)
         return r
 
     def _get_html(self, url):

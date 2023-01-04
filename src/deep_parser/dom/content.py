@@ -40,7 +40,7 @@ from html import unescape
 from bs4 import BeautifulSoup
 from lxml import etree as ET
 from lxml.html import fromstring
-from ..dom.regexps import regexps
+from ..dom.regexps import regexps, TAG_SELECTOR
 
 
 class ContentParserFromWeb:
@@ -55,6 +55,10 @@ class ContentParserFromWeb:
         if html is None:
             self.input = urllib.request.urlopen(url).read().decode("utf-8")
         self.url = url
+
+        # here we can add different customization based on popular website 
+        self.tag_selection = TAG_SELECTOR.get("standard") if "dhakatribune" not in self.url else TAG_SELECTOR.get("dhakatribune")
+
         self.input = self.regexps["replaceBrs"].sub("</p><p>", self.input)
         self.input = self.regexps["replaceFonts"].sub("<\g<1>span>", self.input)
 
@@ -88,7 +92,7 @@ class ContentParserFromWeb:
         
         # cleaned_text = text_only.replace("\n\n", " ").replace("\n", " ")
         text = [unescape(c).strip() for c in text_only.strip().split(".\n") if c]
-        total = [self.title.strip()] + text
+        total = [self.title.strip()] + [c+"." for c in text[:-1]] + [text[-1]]
         return total
 
     def remove_script(self):
@@ -125,14 +129,16 @@ class ContentParserFromWeb:
                 #print("\n############################################\n")
                 s = elem.renderContents().decode("utf-8")
                 #print("SSSSSSSSSSSSSSSS", s)
+
                 if not self.regexps["divToPElements"].search(s):
                     elem.name = "p"
         
-        for node in self.html.findAll("p"):
+        for node in self.html.findAll(self.tag_selection["tag"], self.tag_selection["classes"]):
             # print("NOOOODE", node)
             parent_node = node.parent
             grand_parent_node = parent_node.parent
             inner_text = node.text
+            # print(inner_text)
 
             if not parent_node or len(inner_text) < 20:
                 continue

@@ -1,5 +1,11 @@
 import re
 
+TAG_SELECTOR = {
+    "standard": {"tag": "p", "classes": {}},
+    "dhakatribune": {"tag": "div", "classes": {"class": "report-content"}}
+}
+
+
 regexps = {
     "unlikelyCandidates": re.compile(
         "combx|comment|community|disqus|extra|foot|header|menu|"
@@ -10,7 +16,7 @@ regexps = {
     "okMaybeItsACandidate": re.compile("and|article|article-content|page-article|body|column|col|main|shadow|app-documento-body", re.I),
     "positive": re.compile(
         "article|article-content|page-article|body|content|entry|hentry|main|page|pagination|post|text|"
-        "blog|story|app-documento-body",
+        "blog|story|app-documento-body|report-content",
         re.I,
     ),
     "negative": re.compile(
@@ -25,8 +31,8 @@ regexps = {
         re.I,
     ),
     "divToPElements": re.compile(
-        #"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)", re.I
-        "<(a|blockquote|dl|div|ol|p|pre|table|ul)", re.I
+        "<(a|blockquote|dl|div|img|ol|p|pre|table|ul)", re.I
+        #"<(a|blockquote|dl|img|ol|p|pre|table|ul)", re.I
     ),
     "replaceBrs": re.compile("(<br[^>]*>[ \n\r\t]*){2,}", re.I),
     "replaceFonts": re.compile("<(/?)font[^>]*>", re.I),

@@ -276,6 +276,6 @@ class Images:
         #imgs_tab = Images.inside(list(set(imgs_tab)))
         imgs = near(imgs)
         #imgs_tab = near(imgs_tab)
-        imgs = Images.remove_biggest(imgs, self.page)
+        #imgs = Images.remove_biggest(imgs, self.page)
         
         return [Image(self.page.number, c) for c in list(set(imgs))]

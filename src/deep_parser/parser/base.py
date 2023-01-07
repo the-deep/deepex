@@ -3,6 +3,7 @@ import os
 import base64
 import requests
 import multiprocessing
+from func_timeout import FunctionTimedOut
 
 from ..const import ERROR_MESSAGE_IN_TEXT
 from ..open.pdf import Pdf
@@ -10,7 +11,6 @@ from ..process.images import Images
 from ..process.layout import Layout
 from ..process.parse import DocumentTree, recursive_process
 from ..utils.text import reformat_text, exclude_repetitions
-        
         
 class Results:
 
@@ -79,9 +79,9 @@ class TextFromFile:
                 #    text = root.get_text(output_format=output_format, p_num=root.number)
                 return text, images.imgs, _page
             
-            except Exception as e:
+            except (Exception, TimeoutError, FunctionTimedOut):
                 text = ERROR_MESSAGE_IN_TEXT
-                return text, images.imgs, _page
+                return text, [], _page
         
         _results = []
         for index in range(self.pdf.page_count):
@@ -123,13 +123,12 @@ class TextFromFile:
                 recursive_process(root=root)
                 setattr(root, "number", _page.page.number)
                 text = root.get_text(images=images, p_num=page_idx+1, output_format="list")
-                #if not text:
-                #    text = root.get_text(p_num=page_idx+1, output_format=output_format)
+
                 return text, images.imgs, _page
 
-            except Exception as e:
+            except (Exception, TimeoutError):
                 text = ERROR_MESSAGE_IN_TEXT
-                return text , images.imgs, _page
+                return text , [], _page
                 
         indexes = [i for i in range(pdf.page_count)]
         pages = [pdf[i] for i in indexes]
@@ -139,21 +138,21 @@ class TextFromFile:
         with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
             results = p.map(_process_page, arg, chunksize=1)
         
-        text, imgs, pages = [c[0] for c in results], [c[1] for c in results], [c[2] for c in results]
-        
-        text = exclude_repetitions(text)
+        #text, imgs, pages = [c[0] for c in results], [c[1] for c in results], [c[2] for c in results]
+        save, imgs, pages = [], [], []
+        for text, im, pg in results:
+            save.append(text)
+            imgs.append(im)
+            pages.append(pg)
+
+        save = exclude_repetitions(save)
 
         if output_format == "plain":
-            results = reformat_text(text)#"\n".join(save)
+            results = reformat_text(save)
         elif output_format == "list":
-            results = text
-        else:
-            results = text
-        #text = "\n".join(text) if output_format == "plain" else text
+            results = save
         
-        result_imgs = Results(images=imgs, pages=pages)
-        
-        return text, result_imgs
+        return results, Results(images=imgs, pages=pages)
     
     def get_chunk_size(self):
         if self.pdf.page_count > multiprocessing.cpu_count():

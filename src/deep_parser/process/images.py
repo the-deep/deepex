@@ -53,6 +53,7 @@ class Images:
         [c.get_words(page_words) for c in self.imgs]
     
     @staticmethod
+    @func_set_timeout(10)
     def check_inside(rect: Rect, 
                      ref: Rect):
         
@@ -62,6 +63,7 @@ class Images:
             return False
 
     @staticmethod
+    @func_set_timeout(10)
     def inside(rect_list: List[Rect]):
         
         t = []
@@ -71,6 +73,7 @@ class Images:
         return t
     
     @staticmethod
+    @func_set_timeout(10)
     def is_near(x: float, 
                 y: float, 
                 axis: str = "y"):
@@ -83,6 +86,7 @@ class Images:
             return False
         
     @staticmethod
+    @func_set_timeout(10)
     def resize_zero_area(rect: Rect):
         
         x0, y0, x1, y1 = rect
@@ -122,6 +126,7 @@ class Images:
         return Images.remove_near_rect(f)
 
     @staticmethod
+    @func_set_timeout(10)
     def cleanup_coordinates(coo, _page):
 
         def zero_coordinate(c):
@@ -144,6 +149,7 @@ class Images:
                                     zero_coordinate(coo.y1)), _page)
 
     @staticmethod
+    @func_set_timeout(10)
     def remove_biggest(coors, _page):
 
         half_area = _page.rect.get_area() / 2

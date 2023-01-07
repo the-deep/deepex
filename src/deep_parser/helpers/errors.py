@@ -15,3 +15,7 @@ class IntersectionsError(Exception):
 class ScannedDocumentError(Exception):
     def __init__(self, message: str = "Input Document is probably a scanned one, an OCR system is needed"):
         super().__init__(message)
+
+class ContentTypeError(Exception):
+    def __init__(self, message: str = "Input Document is probably a PDF, not a HTML website!"):
+        super().__init__(message)

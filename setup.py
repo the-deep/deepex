@@ -20,7 +20,6 @@ setup(
         "requests-html",
         "readable-content",
         "func_timeout",
-        "pyppeteer==0.0.14"
         ],
 
     author="",

@@ -22,10 +22,12 @@ def exclude_repetitions(
 def reformat_text(total_text):
 
     replace_text = []
+    
     for i, page in enumerate(total_text):   
         text = PLAIN_SEP.join(page)
         text = START_PAGE_SEP.format(i+1) + text + END_PAGE_SEP.format(i+1)
         replace_text.append(text)
+
     return "\n".join(replace_text)
 
 def get_page_text(leaves, images = None, output_format = "plain", p_num = 0):

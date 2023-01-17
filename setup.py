@@ -22,6 +22,12 @@ setup(
         "func_timeout",
         ],
 
+    entry_points={
+        'console_scripts': [
+            'download-chromium = deep_parser:download_pypeeter_chromium',
+        ]
+    },
+
     author="",
     author_email="",
     description="This package contains parsing utilities for text extraction",

@@ -14,7 +14,7 @@ class TextFromWeb:
 
     def _render_url(self, url):
 
-        r = self.session.get(url, timeout=10)
+        r = self.session.get(url, timeout=5)
         content_type = r.headers.get('content-type')
         
         if PDF_CONTENT_TYPE in content_type:
@@ -31,7 +31,7 @@ class TextFromWeb:
         except ContentTypeError:
             raise ContentTypeError
         except (TimeoutError, Exception) as e:
-            r = self.session.get(url, timeout=10)
+            r = self.session.get(url, timeout=5)
             content_type = r.headers.get('content-type')
             if PDF_CONTENT_TYPE in content_type:
                 raise ContentTypeError

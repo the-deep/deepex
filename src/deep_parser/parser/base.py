@@ -80,7 +80,7 @@ class TextFromFile:
                 return text, images.imgs, _page
             
             except (Exception, TimeoutError, FunctionTimedOut):
-                text = ERROR_MESSAGE_IN_TEXT
+                text = [ERROR_MESSAGE_IN_TEXT]
                 return text, [], _page
         
         _results = []
@@ -127,7 +127,7 @@ class TextFromFile:
                 return text, images.imgs, _page
 
             except (Exception, TimeoutError):
-                text = ERROR_MESSAGE_IN_TEXT
+                text = [ERROR_MESSAGE_IN_TEXT]
                 return text , [], _page
                 
         indexes = [i for i in range(pdf.page_count)]

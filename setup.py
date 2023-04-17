@@ -20,6 +20,7 @@ setup(
         "requests-html",
         "readable-content",
         "timeout-decorator",
+        "pandas"
         ],
 
     entry_points={

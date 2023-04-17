@@ -19,7 +19,7 @@ setup(
         "lxml",
         "requests-html",
         "readable-content",
-        "func_timeout",
+        "timeout-decorator",
         ],
 
     entry_points={

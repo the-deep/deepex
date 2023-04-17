@@ -89,6 +89,8 @@ class TextFromFile:
                 return results
             
             except (Exception, TimeoutError, timeout_decorator.TimeoutError) as e:
+                print(e)
+                raise e
                 return return_error(page)
         
         _results, _results_pic = [], []

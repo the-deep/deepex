@@ -73,7 +73,7 @@ class Images:
 
     #@staticmethod
     #@func_set_timeout(10)
-    @timeout_decorator.timeout(10)
+    #@timeout_decorator.timeout(10)
     def inside(self, rect_list: List[Rect], check: bool = False):
         
         t = []
@@ -121,7 +121,7 @@ class Images:
         
     #@staticmethod 
     #@func_set_timeout(10)
-    @timeout_decorator.timeout(10)
+    #@timeout_decorator.timeout(10)
     def remove_near_rect(self, rect_list):
         
         """recursive method removing nearest graphical components"""
@@ -155,7 +155,7 @@ class Images:
         return self.remove_near_rect(f)
 
     @staticmethod
-    @timeout_decorator.timeout(10)
+    #@timeout_decorator.timeout(10)
     def cleanup_coordinates(coo, _page):
 
         def zero_coordinate(c):
@@ -188,7 +188,7 @@ class Images:
         return coors
     
     @staticmethod
-    @timeout_decorator.timeout(10)
+    #@timeout_decorator.timeout(10)
     def _search_tables(imx0: Union[List[Tuple[Rect, str]], 
                                    List[Rect]],
                        axis: str = "y"):

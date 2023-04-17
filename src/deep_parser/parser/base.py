@@ -3,7 +3,8 @@ import os
 import base64
 import requests
 import multiprocessing
-from func_timeout import FunctionTimedOut
+import timeout_decorator
+#from func_timeout import FunctionTimedOut
 
 from ..const import ERROR_MESSAGE_IN_TEXT
 from ..open.pdf import Pdf
@@ -11,6 +12,8 @@ from ..process.images import Images
 from ..process.layout import Layout
 from ..process.parse import DocumentTree, recursive_process
 from ..utils.text import reformat_text, exclude_repetitions
+from ..utils.format import get_data, return_error, Response
+from ..utils.tables import Tables
         
 class Results:
 
@@ -64,6 +67,57 @@ class TextFromFile:
         except (RuntimeError, ValueError, Exception) as e:
             raise e
     
+    def extract(self):
+
+        def _process_page(page):
+            
+            try:
+                _page = Layout(page)
+                images = Images(page, page_words=_page._htext)
+                root = DocumentTree(_page.page, _page._htext, _page._vtext)
+                recursive_process(root=root)
+                setattr(root, "number", _page.page.number)
+                
+                results = get_data(
+                    leaves=root.leaves,
+                    images=images,
+                    p_num=_page.page.number,
+                    layout=_page,
+                    document=self.pdf
+                )
+
+                return results
+            
+            except (Exception, TimeoutError, timeout_decorator.TimeoutError) as e:
+                return return_error(page)
+        
+        _results, _results_pic = [], []
+        for index in range(self.pdf.page_count):
+            res, res_im = _process_page(self.pdf.get_page(index))
+            _results.append(res)
+            _results_pic.append(res_im)
+
+        self.pics = _results_pic
+        response = Response(blocks=_results, document=self.pdf)
+        response.add_pics([im for page in _results_pic for im in page if im])
+
+        self.resp = response
+        #setattr(self, "response", response)
+
+        return response
+    
+    def get_tables(self):
+
+        if not hasattr(self, "resp"):
+            raise AttributeError("You need to run the extract method before extracting tables")
+        try:
+            tables = [c for c in self.resp.blocks if c.__dict__.get("type")=="table"]
+            tables = Tables(document=self.pdf, tables_list=tables, process_response=self.resp)
+
+            return tables
+        except (Exception, AttributeError, ValueError) as e:
+            raise e
+        
     def extract_text(self, output_format: str = "plain"):
 
         def _process_page(page, output_format: str = "plain"):
@@ -79,7 +133,7 @@ class TextFromFile:
                 #    text = root.get_text(output_format=output_format, p_num=root.number)
                 return text, images.imgs, _page
             
-            except (Exception, TimeoutError, FunctionTimedOut):
+            except (Exception, TimeoutError, timeout_decorator.TimeoutError):
                 text = [ERROR_MESSAGE_IN_TEXT]
                 return text, [], _page
         
@@ -105,7 +159,7 @@ class TextFromFile:
         else:
             results = _results
         return results, Results(images=imgs, pages=pages)
-        
+    
     def extract_text_multi(self, output_format: str = "plain"):
         
         pdf = self.pdf
@@ -154,10 +208,6 @@ class TextFromFile:
         
         return results, Results(images=imgs, pages=pages)
     
-    def get_chunk_size(self):
-        if self.pdf.page_count > multiprocessing.cpu_count():
-            return round(self.pdf.page_count/multiprocessing.cpu_count())
-        else: return 1
 
     def get_document(self):
         return self.stream

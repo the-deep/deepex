@@ -1,23 +1,31 @@
 import fitz
 import random
+import timeout_decorator
 
 from fitz import Rect
 from typing import Union, List, Tuple
 
-from ..const import MAX_WHILE, POINTS_MIN_DIFF
+from ..const import MAX_WHILE, POINTS_MIN_DIFF, SKIP_TEXT
 from ..object.word import Word, ReWord
 from ..utils.check import create_lines
-from func_timeout import func_set_timeout, FunctionTimedOut
 
 class Image:
     
     def __init__(self, 
                  page: int,
-                 rect: Rect):
+                 rect: Rect,
+                 is_table: bool = False,
+                 is_graph: bool = False):
         
         self.page = page
         self.xmin, self.ymin, self.xmax, self.ymax = rect
         self.rect = rect
+        self.is_table = is_table
+        self.is_graph = is_graph
+        self.skip_text = True
+        self.words = []
+        self.lines = []
+        
         
     @staticmethod
     def check_words(word: Union[Word, ReWord], 
@@ -49,11 +57,12 @@ class Images:
                  page_words: List[Word]):
         
         self.page = page
+        self.graphs = []
         self.imgs = self.process()
         [c.get_words(page_words) for c in self.imgs]
+        self.refine()
     
     @staticmethod
-    @func_set_timeout(10)
     def check_inside(rect: Rect, 
                      ref: Rect):
         
@@ -62,18 +71,32 @@ class Images:
         else:
             return False
 
-    @staticmethod
-    @func_set_timeout(10)
-    def inside(rect_list: List[Rect]):
+    #@staticmethod
+    #@func_set_timeout(10)
+    @timeout_decorator.timeout(10)
+    def inside(self, rect_list: List[Rect], check: bool = False):
         
         t = []
         for c in rect_list:
             if not [e for e in rect_list if Images.check_inside(c, e) and c != e]:
                 t.append(c)
+                if check:
+                    double_check = [e for e in rect_list if Images.check_inside(e, c) and c!=e]
+                    if double_check:
+                        self.graphs.append(c)
+    
         return t
     
+    #@staticmethod
+    def near(self, imgs):
+        im = imgs.copy()
+        try:
+            res = self.remove_near_rect(imgs)
+            return res
+        except (timeout_decorator.TimeoutError, Exception) as e:
+            return im
+    
     @staticmethod
-    @func_set_timeout(10)
     def is_near(x: float, 
                 y: float, 
                 axis: str = "y"):
@@ -86,7 +109,6 @@ class Images:
             return False
         
     @staticmethod
-    @func_set_timeout(10)
     def resize_zero_area(rect: Rect):
         
         x0, y0, x1, y1 = rect
@@ -97,9 +119,10 @@ class Images:
         
         return Rect(x0,y0,x1,y1)
         
-    @staticmethod 
-    @func_set_timeout(10)
-    def remove_near_rect(rect_list):
+    #@staticmethod 
+    #@func_set_timeout(10)
+    @timeout_decorator.timeout(10)
+    def remove_near_rect(self, rect_list):
         
         """recursive method removing nearest graphical components"""
         
@@ -121,12 +144,18 @@ class Images:
             tot = list(set([k] + v))
             x0, y0, x1, y1 = min(tot, key=lambda x: x.x0), min(tot, key=lambda x: x.y0), \
                              max(tot, key=lambda x: x.x1), max(tot, key=lambda x: x.y1)
-            f.append(Rect(x0.x0, y0.y0, x1.x1, y1.y1))
             
-        return Images.remove_near_rect(f)
+            rect = Rect(x0.x0, y0.y0, x1.x1, y1.y1)
+            
+            if len(tot)>1:
+                self.graphs.append(rect)
+                
+            f.append(rect)
+            
+        return self.remove_near_rect(f)
 
     @staticmethod
-    @func_set_timeout(10)
+    @timeout_decorator.timeout(10)
     def cleanup_coordinates(coo, _page):
 
         def zero_coordinate(c):
@@ -149,23 +178,22 @@ class Images:
                                     zero_coordinate(coo.y1)), _page)
 
     @staticmethod
-    @func_set_timeout(10)
-    def remove_biggest(coors, _page):
+    def remove_biggest(coors, _page, tabs):
 
         half_area = _page.rect.get_area() / 2
         for coo in coors:
-            if coo.get_area() > half_area:
-                coors.remove(coo)
+            if coo not in tabs:
+                if coo.get_area() > half_area:
+                    coors.remove(coo)
         return coors
     
     @staticmethod
-    @func_set_timeout(10)
+    @timeout_decorator.timeout(10)
     def _search_tables(imx0: Union[List[Tuple[Rect, str]], 
                                    List[Rect]],
                        axis: str = "y"):
 
         near, another = [], []
-
         imx0 = sorted(sorted([s for s in imx0], key=lambda x: x.x0), key=lambda x: x.y0)
 
         tot = list(set(imx0.copy()))
@@ -238,6 +266,7 @@ class Images:
 
         return call
     
+    
     def process(self):
         
         def tables(imgs):
@@ -245,43 +274,63 @@ class Images:
             rex = []
             try:
                 main_y_tables = Images._search_tables(imgs)
-            except (FunctionTimedOut, Exception) as e:
+            except (timeout_decorator.TimeoutError, Exception) as e:
                 main_y_tables = {}
             if main_y_tables:
                 for _, a in main_y_tables.items():
                     try:
                         rex.append(Images._search_tables(a, axis="x"))
-                    except (FunctionTimedOut, Exception) as e:
+                    except (timeout_decorator.TimeoutError, Exception) as e:
                         pass
             return rex
         
-        def near(imgs):
-            im = imgs.copy()
-            try:
-                res = Images.remove_near_rect(imgs)
-                return res
-            except (FunctionTimedOut, Exception) as e:
-                return im
 
         imgs_start = [self.cleanup_coordinates(c.get("rect"), self.page) for c in self.page.get_drawings()]
+        #print(imgs_start)
         #imgs_start = Images.remove_biggest(imgs_start, self.page)
-        imgs = list(set(Images.inside(imgs_start)))
-
+        imgs = list(set(self.inside(imgs_start, check=True)))
+        #print("After", imgs)
         rex = tables(imgs)
-        #imgs_tab = []
+        self.tabs = []
+        #self.normal = []
         if rex:
             for el in rex:
                 if el:
                     for value in el.values():
+                        
                         x0, y0, x1, y1 = min(value, key=lambda x: x.x0), min(value, key=lambda x: x.y0), \
                                          max(value, key=lambda x: x.x1), max(value, key=lambda x: x.y1)
                         
-                        imgs.append(Rect(x0.x0, y0.y0, x1.x1, y1.y1))
+                        rect = Rect(x0.x0, y0.y0, x1.x1, y1.y1)
+                        
+                        if len(value)>1:
+                            self.tabs.append(rect)
+                            
+                        #elif len(value)==1:
+                        #    self.normal.append(rect)
+                            
+                        imgs.append(rect)
 
-        imgs = Images.inside(list(set(imgs)))
+        imgs = self.inside(list(set(imgs)), check=True)
         #imgs_tab = Images.inside(list(set(imgs_tab)))
-        imgs = near(imgs)
+        imgs = self.near(imgs)
         #imgs_tab = near(imgs_tab)
-        #imgs = Images.remove_biggest(imgs, self.page)
+        imgs = Images.remove_biggest(imgs, self.page, self.tabs)
         
-        return [Image(self.page.number, c) for c in list(set(imgs))]
+        final = []
+        for c in list(set(imgs)):
+            if c in self.tabs:
+                final.append(Image(self.page.number, c, is_table=True))
+            elif c in self.graphs:
+                final.append(Image(self.page.number, c, is_graph=True))
+            else:
+                final.append(Image(self.page.number, c))
+                
+        return final
+    
+    def refine(self):
+        for img in self.imgs:
+            if img.is_table is False and img.words and img.is_graph is False:
+                setattr(img, "skip_text", False)
+            elif img.is_graph and img.words:
+                setattr(img, "skip_text", True)

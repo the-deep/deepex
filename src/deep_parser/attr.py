@@ -15,3 +15,7 @@ Y1: str = "y1"
 START_PAGE_SEP: str = "********* [PAGE {} START] *********\n"
 END_PAGE_SEP: str = "\n********* [PAGE {} END] *********\n"
 PLAIN_SEP: str = "\n\n\n"
+
+TEXT_BLOCK_TYPE: str = "text"
+IMAGE_BLOCK_TYPE: str = "image"
+TABLE_BLOCK_TYPE: str = "table"

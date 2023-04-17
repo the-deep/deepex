@@ -9,4 +9,6 @@ class BasePage:
 
     def init_page(self, position = 4):
 
-        return sorted([BaseWord((self.page, word)).word_attr_list for word in self._page], key=itemgetter(position))
+        return sorted([BaseWord((self.page, word)).word_attr_list for word in self._page], 
+                      key=itemgetter(position))
+    

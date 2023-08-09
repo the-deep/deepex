@@ -67,13 +67,13 @@ class TextFromFile:
         except (RuntimeError, ValueError, Exception) as e:
             raise e
     
-    def extract(self):
+    def extract(self, consider_tables: bool = True):
 
         def _process_page(page):
             
             try:
                 _page = Layout(page)
-                images = Images(page, page_words=_page._htext)
+                images = Images(page, page_words=_page._htext, consider_tables=consider_tables)
                 root = DocumentTree(_page.page, _page._htext, _page._vtext)
                 recursive_process(root=root)
                 setattr(root, "number", _page.page.number)

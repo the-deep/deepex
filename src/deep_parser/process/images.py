@@ -54,11 +54,12 @@ class Images:
     
     def __init__(self,
                  page: fitz.fitz.Page,
-                 page_words: List[Word]):
+                 page_words: List[Word],
+                 consider_tables: bool = True):
         
         self.page = page
         self.graphs = []
-        self.imgs = self.process()
+        self.imgs = self.process(consider_tables=consider_tables)
         [c.get_words(page_words) for c in self.imgs]
         self.refine()
     
@@ -178,7 +179,7 @@ class Images:
                                     zero_coordinate(coo.y1)), _page)
 
     @staticmethod
-    def remove_biggest(coors, _page, tabs):
+    def remove_biggest(coors, _page, tabs, consider_tables: bool = True):
 
         half_area = _page.rect.get_area() / 2
         for coo in coors:
@@ -267,7 +268,7 @@ class Images:
         return call
     
     
-    def process(self):
+    def process(self, consider_tables: bool = True):
         
         def tables(imgs):
             
@@ -315,7 +316,7 @@ class Images:
         #imgs_tab = Images.inside(list(set(imgs_tab)))
         imgs = self.near(imgs)
         #imgs_tab = near(imgs_tab)
-        imgs = Images.remove_biggest(imgs, self.page, self.tabs)
+        imgs = Images.remove_biggest(imgs, self.page, self.tabs, consider_tables)
         
         final = []
         for c in list(set(imgs)):
@@ -325,7 +326,7 @@ class Images:
                 final.append(Image(self.page.number, c, is_graph=True))
             else:
                 final.append(Image(self.page.number, c))
-                
+
         return final
     
     def refine(self):

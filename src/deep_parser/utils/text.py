@@ -33,12 +33,12 @@ def reformat_text(total_text):
 def get_page_text(leaves, images = None, output_format = "plain", p_num = 0):
     
     excluded_words = []
-    if images:
-        if images.imgs:
-            for im in images.imgs:
-                if im.words: 
-                    for c in im.words:
-                        excluded_words.append(c.rect)
+    #if images:
+    #    if images.imgs:
+    #        for im in images.imgs:
+    #            if im.words: 
+    #                for c in im.words:
+    #                    excluded_words.append(c.rect)
 
     #if output_format == "plain":
     #    total_text = [START_PAGE_SEP.format(p_num+1)]

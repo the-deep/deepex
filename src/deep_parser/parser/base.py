@@ -135,7 +135,7 @@ class TextFromFile:
                 return text, images.imgs, _page
             
             except (Exception, TimeoutError, timeout_decorator.TimeoutError):
-                text = [ERROR_MESSAGE_IN_TEXT]
+                text = []
                 return text, [], _page
         
         _results = []

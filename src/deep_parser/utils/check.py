@@ -24,7 +24,7 @@ def intersection(words,
 
 
 def get_lines_distances(lines):
-    return [round(nxt.ymin - curr.ymax, 4) for curr, nxt in zip(lines, lines[1:])]
+    return [round(nxt.ymin - curr.ymax, 0) for curr, nxt in zip(lines, lines[1:])]
 
 
 def minumun_words(words, candidate, threshold = MIN_WORDS_IN_COLUMN):

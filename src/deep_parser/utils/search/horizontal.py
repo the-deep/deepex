@@ -47,15 +47,23 @@ def search_horizontal(lines, page, section):
 
             _up = (FONTSIZE_MIN - relative_area) * (d_j + _up_distance) + relative_area * z_j - _up_correction
             _down = (FONTSIZE_MIN - relative_area) * (d_i + _down_distance) + relative_area * z_i - _down_correction
-
+            
+            
             if (z_j < HOR_THRES_TOT and z_i < HOR_THRES_TOT) and (_up_distance < FONTSIZE_DIFFERENCE and _down_distance < FONTSIZE_DIFFERENCE):
                 continue
             elif _up > _down:
                 candidates.append(_up_latent)
                 avoid_candidates.append(cur)
+
+                #print(
+                #    _up_latent, "---", _up, _down, z_j, z_i, _up_distance, _down_distance
+                #)
             else:
                 candidates.append(_down_latent)
                 avoid_candidates.append(nxt)
+                #print(
+                #    _down_latent, "---", _up, _down, z_j, z_i, _up_distance, _down_distance
+                #)
 
         if candidates:
 

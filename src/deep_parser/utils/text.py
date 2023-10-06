@@ -1,3 +1,5 @@
+import re
+
 from collections import Counter
 from ..attr import START_PAGE_SEP, END_PAGE_SEP, PLAIN_SEP
 
@@ -30,15 +32,16 @@ def reformat_text(total_text):
 
     return "\n".join(replace_text)
 
+
 def get_page_text(leaves, images = None, output_format = "plain", p_num = 0):
     
     excluded_words = []
-    #if images:
-    #    if images.imgs:
-    #        for im in images.imgs:
-    #            if im.words: 
-    #                for c in im.words:
-    #                    excluded_words.append(c.rect)
+    if images:
+        if images.imgs:
+            for im in images.imgs:
+                if im.words: 
+                    for c in im.words:
+                        excluded_words.append(c.rect)
 
     #if output_format == "plain":
     #    total_text = [START_PAGE_SEP.format(p_num+1)]
@@ -55,6 +58,9 @@ def get_page_text(leaves, images = None, output_format = "plain", p_num = 0):
             #if len(t.strip().split()) > 1:
             if not len(t.strip().split())==1:
                 if not t.strip().lower().isnumeric():
+                    leave.append(t)
+            else:
+                if re.sub(r'[^\w]', '', t.strip().lower()).isalnum():
                     leave.append(t)
             
         #if all(c == "" for c in leave):

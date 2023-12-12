@@ -6,7 +6,6 @@ from ..attr import SEPARATION_LINE_POSITION
 
 class Segment:
 
-
     def __init__(self,
                  section,
                  vertical = None,

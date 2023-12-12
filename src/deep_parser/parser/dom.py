@@ -54,7 +54,6 @@ class TextFromWeb:
             self.pars = ContentParserFromWeb(url=url, html=results.html.html)
         except (RecursionError, SerialisationError, Exception):
             return [""] if output_format == "list" else ""
-
         text = self.pars.get_content()
 
         if output_format == "plain":

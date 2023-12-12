@@ -4,17 +4,18 @@ import base64
 import requests
 import multiprocessing
 import timeout_decorator
-#from func_timeout import FunctionTimedOut
 
 from ..const import ERROR_MESSAGE_IN_TEXT
 from ..open.pdf import Pdf
 from ..process.images import Images
 from ..process.layout import Layout
+from ..helpers.errors import DocumentProcessingError
 from ..process.parse import DocumentTree, recursive_process
 from ..utils.text import reformat_text, exclude_repetitions
 from ..utils.format import get_data, return_error, Response
 from ..utils.tables import Tables
         
+
 class Results:
 
     def __init__(self, images, pages):
@@ -64,8 +65,8 @@ class TextFromFile:
                 doc = requests.get(url).content
             stream = io.BytesIO(base64.b64decode(stream)) if not from_web else io.BytesIO(doc)
             self.pdf = Pdf(stream=stream, filetype=ext)
-        except (RuntimeError, ValueError, Exception) as e:
-            raise e
+        except (RuntimeError, ValueError, Exception) as exc:
+            raise exc
     
     def extract(self, consider_tables: bool = True):
 
@@ -89,8 +90,7 @@ class TextFromFile:
                 return results
             
             except (Exception, TimeoutError, timeout_decorator.TimeoutError) as e:
-                #return str(e)
-                return return_error(page)
+                return return_error(page, raised_error=e)
         
         _results, _results_pic = [], []
         for index in range(self.pdf.page_count):
@@ -121,7 +121,7 @@ class TextFromFile:
         
     def extract_text(self, output_format: str = "plain"):
 
-        def _process_page(page, output_format: str = "plain"):
+        def _process_page(page):
             
             try:
                 _page = Layout(page)
@@ -130,17 +130,16 @@ class TextFromFile:
                 recursive_process(root=root)
                 setattr(root, "number", _page.page.number)
                 text = root.get_text(images=images, output_format="list", p_num=root.number)
-                #if not text:
-                #    text = root.get_text(output_format=output_format, p_num=root.number)
                 return text, images.imgs, _page
             
-            except (Exception, TimeoutError, timeout_decorator.TimeoutError):
-                text = []
-                return text, [], _page
+            except (Exception, TimeoutError, timeout_decorator.TimeoutError) as exc:
+                raise DocumentProcessingError(message=f"Error: {exc}. Page: {page.number}")
+                #text = []
+                #return text, [], _page
         
         _results = []
         for index in range(self.pdf.page_count):
-            text, images, _page = _process_page(self.pdf.get_page(index), output_format="list")
+            text, images, _page = _process_page(self.pdf.get_page(index))
             _results.append((text, images, _page))
 
         save, imgs, pages, i = [], [], [], 1
@@ -154,7 +153,7 @@ class TextFromFile:
         save = exclude_repetitions(save)
 
         if output_format == "plain":
-            results = reformat_text(save)#"\n".join(save)
+            results = reformat_text(save)
         elif output_format == "list":
             results = save
         else:
@@ -181,9 +180,10 @@ class TextFromFile:
 
                 return text, images.imgs, _page
 
-            except (Exception, TimeoutError):
-                text = [ERROR_MESSAGE_IN_TEXT]
-                return text , [], _page
+            except (Exception, TimeoutError, timeout_decorator.TimeoutError) as exc:
+                raise DocumentProcessingError(message=f"Error: {exc}. Page: {page.number}")
+                #text = [ERROR_MESSAGE_IN_TEXT]
+                #return text , [], _page
                 
         indexes = [i for i in range(pdf.page_count)]
         pages = [pdf[i] for i in indexes]

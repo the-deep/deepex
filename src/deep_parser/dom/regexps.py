@@ -1,7 +1,7 @@
 import re
 
 TAG_SELECTOR = {
-    "standard": {"tag": "p", "classes": {}},
+    "standard": {"tag": ["p", "li"], "classes": {}},
     "dhakatribune": {"tag": "div", "classes": {"class": "report-content"}}
 }
 

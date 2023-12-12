@@ -62,7 +62,7 @@ def check_line(t):
         return True
 
 
-def return_error(page):
+def return_error(page, raised_error):
 
     error_block = Block(
         type=TEXT_BLOCK_TYPE,
@@ -76,7 +76,7 @@ def return_error(page):
 
     error_block.update(
         {
-            "text": ERROR_MESSAGE_IN_TEXT,
+            "text": str(raised_error),
             "textOrder": 0,
             "textCrop": None
 

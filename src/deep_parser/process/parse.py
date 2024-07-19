@@ -1,4 +1,4 @@
-from fitz.fitz import Page
+from fitz import Page
 from anytree import NodeMixin
 
 from ..const import MAX_ITERATION

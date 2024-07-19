@@ -53,7 +53,7 @@ class Image:
 class Images:
     
     def __init__(self,
-                 page: fitz.fitz.Page,
+                 page: fitz.Page,
                  page_words: List[Word],
                  consider_tables: bool = True):
         
@@ -72,7 +72,7 @@ class Images:
         else:
             return False
 
-    @timeout_decorator.timeout(20, use_signals=False)
+    #@timeout_decorator.timeout(20)
     def inside(self, rect_list: List[Rect], check: bool = False):
         
         t = []
@@ -119,7 +119,7 @@ class Images:
         return Rect(x0,y0,x1,y1)
         
 
-    @timeout_decorator.timeout(20, use_signals=False)
+    #@timeout_decorator.timeout(20)
     def remove_near_rect(self, rect_list):
         
         """recursive method removing nearest graphical components"""
@@ -155,7 +155,6 @@ class Images:
     
     #@timeout_decorator.timeout(10)
     @staticmethod
-    @timeout_decorator.timeout(20, use_signals=False)
     def cleanup_coordinates(coo, _page):
 
         def zero_coordinate(c):
@@ -187,10 +186,8 @@ class Images:
                     coors.remove(coo)
         return coors
     
-    
-    #@timeout_decorator.timeout(10)
+    #@timeout_decorator.timeout(20, use_signals=False)
     @staticmethod
-    @timeout_decorator.timeout(20, use_signals=False)
     def _search_tables(imx0: Union[List[Tuple[Rect, str]], 
                                    List[Rect]],
                        axis: str = "y"):
@@ -286,40 +283,47 @@ class Images:
                         pass
             return rex
         
-
-        imgs_start = [self.cleanup_coordinates(c.get("rect"), self.page) for c in self.page.get_drawings()]
+        final = []
+        imgs = []
+        #imgs_start = [self.page.get_image_bbox(c[7]) for c in self.page.get_images()]#[self.cleanup_coordinates(c.get("rect"), self.page) for c in self.page.get_drawings()]
         #print(imgs_start)
         #imgs_start = Images.remove_biggest(imgs_start, self.page)
-        imgs = list(set(self.inside(imgs_start, check=True)))
+        #imgs = list(set(self.inside(imgs_start, check=True)))
         #print("After", imgs)
-        rex = tables(imgs)
-        self.tabs = []
+        #rex = tables(imgs)
+
+        check_n_draw = len(self.page.get_drawings())
+        if check_n_draw >= 20000:
+            return final
+        
+        self.tabs = [Rect(c.bbox) for c in self.page.find_tables().tables]
+        if self.tabs:
+            imgs.extend(self.tabs)
+        
+        #print(self.tabs)
         #self.normal = []
-        if rex:
-            for el in rex:
-                if el:
-                    for value in el.values():
+        #if rex:
+        #    for el in rex:
+        #        if el:
+        #            for value in el.values():
+        #                
+        #                x0, y0, x1, y1 = min(value, key=lambda x: x.x0), min(value, key=lambda x: x.y0), \
+        #                                 max(value, key=lambda x: x.x1), max(value, key=lambda x: x.y1)
                         
-                        x0, y0, x1, y1 = min(value, key=lambda x: x.x0), min(value, key=lambda x: x.y0), \
-                                         max(value, key=lambda x: x.x1), max(value, key=lambda x: x.y1)
+        #                rect = Rect(x0.x0, y0.y0, x1.x1, y1.y1)
                         
-                        rect = Rect(x0.x0, y0.y0, x1.x1, y1.y1)
-                        
-                        if len(value)>1:
-                            self.tabs.append(rect)
+        #                if len(value)>1:
+        #                    self.tabs.append(rect)
                             
                         #elif len(value)==1:
                         #    self.normal.append(rect)
                             
-                        imgs.append(rect)
+        #                imgs.append(rect)
 
         imgs = self.inside(list(set(imgs)), check=True)
-        #imgs_tab = Images.inside(list(set(imgs_tab)))
         imgs = self.near(imgs)
-        #imgs_tab = near(imgs_tab)
         imgs = Images.remove_biggest(imgs, self.page, self.tabs, consider_tables)
         
-        final = []
         for c in list(set(imgs)):
             if c in self.tabs:
                 final.append(Image(self.page.number, c, is_table=True))

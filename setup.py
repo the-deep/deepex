@@ -12,15 +12,15 @@ setup(
 
     install_requires=[
         "numpy",
-        "pymupdf<=1.24.1",
+        "pymupdf",
         "anytree",
         "pyyaml",
         "beautifulsoup4",
-        "lxml==5.0.0",
+        "lxml",
         # "requests-html",
         "readable-content",
         "timeout-decorator",
-        "pandas",
+        "pandas>=2.0.0",
         "requests",
         "trafilatura"
         ],

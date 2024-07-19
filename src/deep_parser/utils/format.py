@@ -196,8 +196,11 @@ def get_data(leaves, images = None, p_num = 0, layout = None, document=None):
                 rect=image.rect,
                 layout=layout
             ))
-            
-    pure_images = [layout.page.get_image_bbox(c[7]) 
+    
+    if len(layout.page.get_images())>3000:
+        pure_images = []
+    else:
+        pure_images = [layout.page.get_image_bbox(c[7]) 
                    for c in layout.page.get_images()]     
     
     for image in pure_images:
